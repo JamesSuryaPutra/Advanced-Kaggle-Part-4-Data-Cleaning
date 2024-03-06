@@ -1,0 +1,205 @@
+<Setup>
+The questions below will give you feedback on your work. Run the following cell to set up the feedback system.
+
+****************
+from learntools.core import binder
+binder.bind(globals())
+from learntools.data_cleaning.ex3 import *
+print("Setup Complete")
+
+Setup Complete
+****************
+
+<Get our environment set up>
+The first thing we'll need to do is load in the libraries and dataset we'll be using. We'll be working with a dataset containing information on earthquakes that occured between 1965
+and 2016.
+
+****************
+# modules we'll use
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import datetime
+
+# read in our data
+earthquakes = pd.read_csv("../input/earthquake-database/database.csv")
+
+# set seed for reproducibility
+np.random.seed(0)
+****************
+
+<1st step: Check the data type of our date column>
+You'll be working with the "Date" column from the earthquakes dataframe. Investigate this column now: does it look like it contains dates? What is the dtype of the column?
+
+****************
+# TODO: Your code here!
+earthquakes['Date'].dtype
+
+dtype('O')
+****************
+
+Once you have answered the question above, run the code cell below to get credit for your work.
+
+****************
+# Check your answer (Run this code cell to receive credit!)
+q1.check()
+
+Correct:
+The "Date" column in the earthquakes DataFrame does have dates. The dtype is "object".
+****************
+
+<2nd step: Convert our date columns to datetime>
+Most of the entries in the "Date" column follow the same format: "month/day/four-digit year". However, the entry at index 3378 follows a completely different pattern. Run the code cell
+below to see this.
+
+****************
+earthquakes[3378:3383]
+
+Date	Time	Latitude	Longitude	Type	Depth	Depth Error	Depth Seismic Stations	Magnitude	Magnitude Type	...	Magnitude Seismic Stations	Azimuthal Gap	Horizontal Distance	Horizontal Error	Root Mean Square	ID	Source	Location Source	Magnitude Source	Status
+3378	1975-02-23T02:58:41.000Z	1975-02-23T02:58:41.000Z	8.017	124.075	Earthquake	623.0	NaN	NaN	5.6	MB	...	NaN	NaN	NaN	NaN	NaN	USP0000A09	US	US	US	Reviewed
+3379	02/23/1975	03:53:36	-21.727	-71.356	Earthquake	33.0	NaN	NaN	5.6	MB	...	NaN	NaN	NaN	NaN	NaN	USP0000A0A	US	US	US	Reviewed
+3380	02/23/1975	07:34:11	-10.879	166.667	Earthquake	33.0	NaN	NaN	5.5	MS	...	NaN	NaN	NaN	NaN	NaN	USP0000A0C	US	US	US	Reviewed
+3381	02/25/1975	05:20:05	-7.388	149.798	Earthquake	33.0	NaN	NaN	5.5	MB	...	NaN	NaN	NaN	NaN	NaN	USP0000A12	US	US	US	Reviewed
+3382	02/26/1975	04:48:55	85.047	97.969	Earthquake	33.0	NaN	NaN	5.6	MS	...	NaN	NaN	NaN	NaN	NaN	USP0000A1H	US	US	US	Reviewed
+5 rows × 21 columns
+****************
+
+This does appear to be an issue with data entry: ideally, all entries in the column have the same format. We can get an idea of how widespread this issue is by checking the length of
+each entry in the "Date" column.
+
+****************
+date_lengths = earthquakes.Date.str.len()
+date_lengths.value_counts()
+
+Date
+10    23409
+24        3
+Name: count, dtype: int64
+****************
+
+Looks like there are two more rows that has a date in a different format. Run the code cell below to obtain the indices corresponding to those rows and print the data.
+
+****************
+indices = np.where([date_lengths == 24])[1]
+print('Indices with corrupted data:', indices)
+earthquakes.loc[indices]
+
+Indices with corrupted data: [ 3378  7512 20650]
+
+Date	Time	Latitude	Longitude	Type	Depth	Depth Error	Depth Seismic Stations	Magnitude	Magnitude Type	...	Magnitude Seismic Stations	Azimuthal Gap	Horizontal Distance	Horizontal Error	Root Mean Square	ID	Source	Location Source	Magnitude Source	Status
+3378	1975-02-23T02:58:41.000Z	1975-02-23T02:58:41.000Z	8.017	124.075	Earthquake	623.0	NaN	NaN	5.6	MB	...	NaN	NaN	NaN	NaN	NaN	USP0000A09	US	US	US	Reviewed
+7512	1985-04-28T02:53:41.530Z	1985-04-28T02:53:41.530Z	-32.998	-71.766	Earthquake	33.0	NaN	NaN	5.6	MW	...	NaN	NaN	NaN	NaN	1.30	USP0002E81	US	US	HRV	Reviewed
+20650	2011-03-13T02:23:34.520Z	2011-03-13T02:23:34.520Z	36.344	142.344	Earthquake	10.1	13.9	289.0	5.8	MWC	...	NaN	32.3	NaN	NaN	1.06	USP000HWQP	US	US	GCMT	Reviewed
+3 rows × 21 columns
+****************
+
+Given all of this information, it's your turn to create a new column "date_parsed" in the earthquakes dataset that has correctly parsed dates in it.
+(Note: When completing this problem, you are allowed to (but are not required to) amend the entries in the "Date" and "Time" columns. Do not remove any rows from the dataset.)
+
+****************
+# TODO: Your code here
+earthquakes.loc[3378, "Date"] = "02/23/1975"
+earthquakes.loc[7512, "Date"] = "04/28/1985"
+earthquakes.loc[20650, "Date"] = "03/13/2011"
+earthquakes['date_parsed'] = pd.to_datetime(earthquakes['Date'], format="%m/%d/%Y")
+
+# Check your answer
+q2.check()
+
+Correct
+
+# Lines below will give you a hint or solution code
+q2.hint()
+q2.solution()
+
+Hint:
+Since there are only three rows with a fancy type, you might consider manually editing them. For instance, you can begin by setting earthquakes.loc[3378, "Date"] = "02/23/1975".
+
+Solution:
+earthquakes.loc[3378, "Date"] = "02/23/1975"
+earthquakes.loc[7512, "Date"] = "04/28/1985"
+earthquakes.loc[20650, "Date"] = "03/13/2011"
+earthquakes['date_parsed'] = pd.to_datetime(earthquakes['Date'], format="%m/%d/%Y")
+****************
+
+<3rd step: Select the day of the month>
+Create a pandas Series day_of_month_earthquakes containing the day of the month from the "date_parsed" column.
+
+****************
+# try to get the day of the month from the date column
+day_of_month_earthquakes = earthquakes['date_parsed'].dt.day
+
+# Check your answer
+q3.check()
+
+Correct
+
+# Lines below will give you a hint or solution code
+q3.hint()
+q3.solution()
+
+Hint:
+Use the .dt accessor.
+
+Solution:
+day_of_month_earthquakes = earthquakes['date_parsed'].dt.day
+****************
+
+<4th step: Plot the day of the month to check the date parsing>
+Plot the days of the month from your earthquake dataset.
+
+****************
+# TODO: Your code here!
+day_of_month_earthquakes = day_of_month_earthquakes.dropna()
+sns.distplot(day_of_month_earthquakes, kde=False, bins=31)
+****************
+
+Does the graph make sense to you?
+
+****************
+# Check your answer (Run this code cell to receive credit!)
+q4.check()
+
+Correct:
+The graph should make sense: it shows a relatively even distribution in days of the month,which is what we would expect.
+
+# Line below will give you a hint
+q4.hint()
+
+Hint: Remove the missing values, and then use sns.distplot() as follows:
+# remove na's
+day_of_month_earthquakes = day_of_month_earthquakes.dropna()
+
+# plot the day of the month
+sns.distplot(day_of_month_earthquakes, kde=False, bins=31)
+****************
+
+<Optional: Bonus challenge>
+For an extra challenge, you'll work with a Smithsonian dataset that documents Earth's volcanoes and their eruptive history over the past 10,000 years Run the next code cell to load
+the data.
+
+****************
+volcanos = pd.read_csv("../input/volcanic-eruptions/database.csv")
+volcanos.head()
+
+Number	Name	Country	Region	Type	Activity Evidence	Last Known Eruption	Latitude	Longitude	Elevation (Meters)	Dominant Rock Type	Tectonic Setting
+0	210010	West Eifel Volcanic Field	Germany	Mediterranean and Western Asia	Maar(s)	Eruption Dated	8300 BCE	50.170	6.85	600	Foidite	Rift Zone / Continental Crust (>25 km)
+1	210020	Chaine des Puys	France	Mediterranean and Western Asia	Lava dome(s)	Eruption Dated	4040 BCE	45.775	2.97	1464	Basalt / Picro-Basalt	Rift Zone / Continental Crust (>25 km)
+2	210030	Olot Volcanic Field	Spain	Mediterranean and Western Asia	Pyroclastic cone(s)	Evidence Credible	Unknown	42.170	2.53	893	Trachybasalt / Tephrite Basanite	Intraplate / Continental Crust (>25 km)
+3	210040	Calatrava Volcanic Field	Spain	Mediterranean and Western Asia	Pyroclastic cone(s)	Eruption Dated	3600 BCE	38.870	-4.02	1117	Basalt / Picro-Basalt	Intraplate / Continental Crust (>25 km)
+4	211001	Larderello	Italy	Mediterranean and Western Asia	Explosion crater(s)	Eruption Observed	1282 CE	43.250	10.87	500	No Data	Subduction Zone / Continental Crust (>25 km)
+****************
+
+Try parsing the column "Last Known Eruption" from the volcanos dataframe. This column contains a mixture of text ("Unknown") and years both before the common era (BCE, also known as BC)
+and in the common era (CE, also known as AD).
+
+****************
+volcanos['Last Known Eruption'].sample(5)
+
+1471    1962 CE
+617     1996 CE
+305      950 CE
+1199    1720 CE
+1256    Unknown
+Name: Last Known Eruption, dtype: object
+****************
