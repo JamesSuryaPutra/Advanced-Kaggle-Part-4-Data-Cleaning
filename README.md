@@ -1,10 +1,7 @@
-March 1st, 2024
-Advanced Kaggle
--4th Course: Data Cleaning-
-
-=======================
+Date: March 1st, 2024
 User: James Surya Putra
-=======================
+
+# Advanced Kaggle: 4th Course - Data Cleaning
 
 DISCLAIMER:
 - All tutorials and exercises are taken, including questions, submissions, hints, and solutions.
